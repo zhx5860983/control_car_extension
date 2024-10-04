@@ -14,7 +14,7 @@ enum MotorSetupMode {
 /**
  * Custom blocks
  */
-//% weight=100 color=#0fbc11 icon="\10f0d1"
+//% weight=100 color=#0fbc11
 namespace ControlCar {
 
     let straight_pressed = 0
