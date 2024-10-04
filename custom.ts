@@ -1,4 +1,9 @@
-
+enum MotorSetup{
+    //% block="ordered"
+    Ordered = 0,
+    //% block="reversed"
+    Reversed = 1
+}
 
 /**
  * Custom blocks
@@ -18,7 +23,6 @@ namespace ControlCar {
     let pure_rotation_rate = 0.3
     let mixed_rotation_rate = 0.2
 
-
     let dt = 0.0
     let time_current = 0.0
     let time_last = 0.0
@@ -28,14 +32,24 @@ namespace ControlCar {
     let inv_acceleration_time = 1.0 / acceleration_time
 
     /**
-     * TODO: describe your function here
      * @param speed_limit_ is the highest rotational speed of motors
      * @param pure_rotation_rate_ is the speed of motors (as a rate of highest speed) used for pure rotation
      * @param mixed_rotation_rate_ is the speed of motors (as a rate of highest speed) used for mixed rotation
-     * @param is_reverse_motor_setup_ is 1, when motor1 and motor2 corresponse to wheel_right and wheel_left, otherwise 0
+     * @param is_reverse_motor_setup_ is Reversed, when motor1 and motor2 corresponse to wheel_right and wheel_left, otherwise 0
      */
-    //% block
-    export function car_direct_speed(speed_limit_: number, pure_rotation_rate_: number, mixed_rotation_rate_: number, is_reverse_motor_setup_: boolean): void {
+    //% block="Car direct control || with maxRPM $speed_limit_|PRR $pure_rotation_rate_|MRR $mixed_rotation_rate_|and $motor_setup_|motor setup|"
+    //% speed_limit_.min=20.0 pure_rotation_rate_.max=100.0 
+    //% speed_limit_.defl=100.0
+    //% pure_rotation_rate_.min=0.0 pure_rotation_rate_.max=1.0
+    //% pure_rotation_rate_.defl=0.3
+    //% mixed_rotation_rate_.min=0.0 mixed_rotation_rate_.max=0.6
+    //% mixed_rotation_rate_.defl=0.2
+    //% motor_setup_.defl=MotorSetup.Reversed
+    //% weight=100
+    //% inlineInputMode=inline
+    export function car_direct_speed(speed_limit_: number, 
+                                     pure_rotation_rate_: number, mixed_rotation_rate_: number, 
+                                     motor_setup_: MotorSetup = MotorSetup.Reversed): void {
 
         speed_limit = speed_limit_
         pure_rotation_rate = pure_rotation_rate_
@@ -112,7 +126,7 @@ namespace ControlCar {
         // ---------- control panel setup --------------
 
         basic.forever(function () {
-            if (is_reverse_motor_setup_)
+            if (motor_setup_ == MotorSetup.Reversed)
                 wuKong.setAllMotor(velo_r_target, velo_l_target)
             else
                 wuKong.setAllMotor(velo_l_target, velo_r_target)
@@ -120,16 +134,26 @@ namespace ControlCar {
     }
 
     /**
-     * TODO: describe your function here
      * @param speed_limit_ is the highest rotational speed of motors
      * @param pure_rotation_rate_ is the speed of motors (as a rate of highest speed) used for pure rotation
      * @param mixed_rotation_rate_ is the speed of motors (as a rate of highest speed) used for mixed rotation
-     * @param acceleration_time_ is time span (approximately) from current velocity to target velocity withint the servo mechanism
-     * @param is_reverse_motor_setup_ is 1, when motor1 and motor2 corresponse to wheel_right and wheel_left, otherwise 0
+     * @param acceleration_time_ is the rate of current RPM convergening to terget RPM
+     * @param motor_setup_ is Reversed, when motor1 and motor2 corresponse to wheel_right and wheel_left, otherwise 0
      */
-    //% block
+    //% block="Car servo control || with maxRPM $speed_limit_|PRR $pure_rotation_rate_|MRR $mixed_rotation_rate_|and $motor_setup_|motor setup|"
+    //% speed_limit_.min=20.0 pure_rotation_rate_.max=100.0 
+    //% speed_limit_.defl=100.0
+    //% pure_rotation_rate_.min=0.0 pure_rotation_rate_.max=1.0
+    //% pure_rotation_rate_.defl=0.3
+    //% mixed_rotation_rate_.min=0.0 mixed_rotation_rate_.max=0.6
+    //% mixed_rotation_rate_.defl=0.2
+    //% acceleration_time_.min=20 acceleration_time_.max=1000
+    //% acceleration_time_.defl=100
+    //% motor_setup_.defl=MotorSetup.Reversed
+    //% weight=50
+    //% inlineInputMode=inline
     export function car_servo_speed(speed_limit_: number, pure_rotation_rate_: number, mixed_rotation_rate_: number,
-        acceleration_time_: number, is_reverse_motor_setup_: boolean): void {
+        acceleration_time_: number, motor_setup_: MotorSetup): void {
 
         speed_limit = speed_limit_
         pure_rotation_rate = pure_rotation_rate_
@@ -217,7 +241,7 @@ namespace ControlCar {
 
             velo_l = velo_l + inv_acceleration_time * (velo_l_target - velo_l) * dt
             velo_r = velo_r + inv_acceleration_time * (velo_r_target - velo_r) * dt
-            if (is_reverse_motor_setup_)
+            if (motor_setup_ == MotorSetup.Reversed)
                 wuKong.setAllMotor(velo_r, velo_l)
             else
                 wuKong.setAllMotor(velo_l, velo_r)
