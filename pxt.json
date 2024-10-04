@@ -1,5 +1,6 @@
 {
     "name": "control_car_extension",
+    "version": "0.0.1",
     "description": "",
     "dependencies": {
         "core": "*",
