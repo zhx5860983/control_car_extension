@@ -38,6 +38,8 @@ namespace controlCar {
     let accelerationTime = 50
     let invAccelerationTime = 1.0 / accelerationTime
 
+    let inControl = false
+
     /**
      * @param speedLimit_ is the highest rotational speed of motors
      * @param pureRotationRate_ is the speed of motors (as a rate of highest speed) used for pure rotation
@@ -145,25 +147,27 @@ namespace controlCar {
         // ---------- control panel setup --------------
 
         basic.forever(function () {
-            if (motorSetupMode == MotorSetupMode.Sevro) {
-                if (Math.abs(timeLast) < 1e-5) {
+            if (inControl) {
+                if (motorSetupMode == MotorSetupMode.Sevro) {
+                    if (Math.abs(timeLast) < 1e-5) {
+                        timeCurrent = input.runningTime()
+                    }
                     timeCurrent = input.runningTime()
+                    dt = timeCurrent - timeLast
+                    timeLast = timeCurrent
+
+                    veloL = veloL + invAccelerationTime * (veloTargetL - veloL) * dt
+                    veloR = veloR + invAccelerationTime * (veloTargetR - veloR) * dt
+                } else {
+                    veloL = veloTargetL
+                    veloR = veloTargetR
                 }
-                timeCurrent = input.runningTime()
-                dt = timeCurrent - timeLast
-                timeLast = timeCurrent
 
-                veloL = veloL + invAccelerationTime * (veloTargetL - veloL) * dt
-                veloR = veloR + invAccelerationTime * (veloTargetR - veloR) * dt
-            } else {
-                veloL = veloTargetL
-                veloR = veloTargetR
+                if (motorSetup_ == MotorSetup.Reversed)
+                    wuKong.setAllMotor(veloR, veloL)
+                else
+                    wuKong.setAllMotor(veloL, veloR)
             }
-
-            if (motorSetup_ == MotorSetup.Reversed)
-                wuKong.setAllMotor(veloR, veloL)
-            else
-                wuKong.setAllMotor(veloL, veloR)
         })
     }
 
@@ -181,6 +185,29 @@ namespace controlCar {
         timeCurrent = 0.0
         dt = 0.0
         timeLast = 0.0
+    }
+
+    //% block="Get car control"
+    //% weight=30
+    export function getControl() {
+        inControl = true
+        resetCarSpeed()
+    }
+
+    //% block="Release car control"
+    //% weight=20
+    export function releaseControl() {
+        resetCarSpeed()
+        inControl = false
+    }
+
+    //% block="Switch car control"
+    //% weight=40
+    export function switchControl() {
+        if (inControl)
+           releaseControl()
+        else
+           getControl()
     }
 
     //% block="Reset car"
