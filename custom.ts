@@ -210,6 +210,12 @@ namespace controlCar {
            getControl()
     }
 
+    //% block="Car is controlled by PAD"
+    //% weight=9
+    export function isControlled() : boolean {
+        return inControl
+    }
+
     //% block="Reset car"
     //% weight=5
     export function resetCar() {
